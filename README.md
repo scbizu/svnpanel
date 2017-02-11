@@ -46,8 +46,8 @@ A  light auth management tool for svn implement by Golang.
 
 ## APIs
 
-|Router     |Method|DataType| Service          |
-|---|---|---|
+|Router|Method|DataType| Service|
+|---|---|---|---|
 |/config:repo|GET|JSON|查询选中版本库的详细信息|
 |/repos|GET|JSON|查询全部版本库|
 |/edit|PUT|JSON|修改svnserve.conf的字段|
