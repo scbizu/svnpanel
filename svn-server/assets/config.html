@@ -1,0 +1,430 @@
+{{define "conf"}}
+<html>
+<head>
+<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="../css/bootstrap-switch.css">
+<link rel="stylesheet" href="../css/highlight.css">
+
+<title>SVN admin</title>
+</head>
+<body>
+
+  <div>
+      <ol class="breadcrumb">
+          <li><a href="#">SVN</a></li>
+          <li><a href="../index.html">Repos</a></li>
+          <li class="active">{{.Reponame}}</li>
+      </ol>
+ </div>
+<div class="repolist" style="width:80%;margin-left:10%">
+  <ul  class="list-group">
+    <li class="list-group-item">仓库名: &nbsp;&nbsp;&nbsp;: &nbsp;&nbsp;&nbsp;<span align="center" id="reponame">{{.Reponame}}</span></li>
+    <li class="list-group-item">创建者: &nbsp;&nbsp;&nbsp;: &nbsp;&nbsp;&nbsp; {{.Author}}</li>
+
+        {{if (eq .Anon "none")}}
+    <li class="list-group-item" style="height:54px;">允许匿名: &nbsp;&nbsp;&nbsp;: &nbsp;&nbsp;&nbsp;<span class="switch switch-small" id="anonymousbox"><input  name="anycheckbox" type="checkbox"></span></li>
+        {{else}}
+    <li class="list-group-item" style="height:54px;">允许匿名: &nbsp;&nbsp;&nbsp;: &nbsp;&nbsp;&nbsp;<span class="switch switch-small" id="anonymousbox"><input  name="anycheckbox" type="checkbox" checked></span></li>
+        {{end}}
+        {{if ne .Pdb ""}}
+    <li class="list-group-item" style="height:54px;">开启用户设置: &nbsp;&nbsp;&nbsp;: &nbsp;&nbsp;&nbsp;
+      <span class="switch switch-small" id="passwdbox"><input  name="passwdcheckbox" type="checkbox" checked>
+      </span>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <span class="passwd-name" style="display:inline;">用户设置文件名: <span class="pdb">{{.Pdb}}</span></span>
+    </li>
+    <div class="passwd" style="display:block">
+        <li class="list-group-item">
+            <table class="table">
+                <tr>
+                    <td>用户名</td>
+                    <td>密码</td>
+                    <td>操作</td>
+                </tr>
+                {{range $k,$v := $.Users}}
+                  <tr>
+                      <td id="username_{{$k}}">{{$k}}</td>
+                      <td id="password_{{$k}}">{{$v}}</td>
+                      <td id="op_{{$k}}">
+                        <button id="edit_{{$k}}" type="button" class="btn btn-default btnuser" style="display:inline"><span class="glyphicon glyphicon-pencil"></span></button>
+                        <button type="button" id="ok_{{$k}}" class="btn btn-success btnuser" style="display:none"><span class="glyphicon glyphicon-ok"></span></button>
+                        &nbsp;&nbsp;&nbsp;<button  id="del_{{$k}}"  type="button" class="btn btn-danger btnuser"><span class="glyphicon glyphicon-trash"></span></button>
+                      </td>
+                  </tr>
+                {{end}}
+                <tr id="new_passwd">
+                    <td><button class="btn btn-default" id="new_passwd_btn"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;添加一条用户信息</button></td>
+                </tr>
+            </table>
+        </li>
+    </div>
+        {{else}}
+    <li class="list-group-item" style="height:54px;">开启用户设置: &nbsp;&nbsp;&nbsp;: &nbsp;&nbsp;&nbsp;<span class="switch switch-small" id="passwdbox"><input  name="passwdcheckbox" type="checkbox" ></span>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span class="passwd-name" style="display:none">用户设置文件名:<span class="pdb"> {{.Pdb}}</span></span>
+    </li>
+    <div class="passwd" style="display:none">
+        <li class="list-group-item">
+            <table class="table">
+                <tr>
+                    <td>用户名</td>
+                    <td>密码</td>
+                    <td>操作</td>
+                </tr>
+                {{range $k,$v := $.Users}}
+                  <tr>
+                      <td id="username_{{$k}}">{{$k}}</td>
+                      <td id="password_{{$k}}">{{$v}}</td>
+                    <td id="op_{{$k}}">
+                      <button id="edit_{{$k}}" type="button" class="btn btn-default btnuser" style="display:inline"><span class="glyphicon glyphicon-pencil"></span></button>
+                      <button type="button" id="ok_{{$k}}" class="btn btn-success btnuser" style="display:none"><span class="glyphicon glyphicon-ok"></span></button>
+                      &nbsp;&nbsp;&nbsp;<button  id="del_{{$k}}"  type="button" class="btn btn-danger btnuser"><span class="glyphicon glyphicon-trash"></span></button>
+                    </td>
+                  </tr>
+                {{end}}
+                <tr id="new_passwd">
+                  <td><button class="btn btn-default" id="new_passwd_btn"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;添加一条用户信息</button></td>
+                </tr>
+            </table>
+        </li>
+    </div>
+        {{end}}
+        {{if ne .Adb ""}}
+    <li class="list-group-item" style="height:54px;">开启权限设置: &nbsp;&nbsp;&nbsp;: &nbsp;&nbsp;&nbsp;<span class="switch switch-small" id="authzbox"><input  name="authzcheckbox" type="checkbox" checked></span>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span class="authz-name" style="display:inline">权限配置文件名:<span class="adb">{{.Adb}}</span></span>
+    </li>
+    <div class="authz" style="display:block">
+    <li class="list-group-item">
+      <table class="table">
+
+        <tr>
+            <td>用户组名</td>
+            <td>用户(填写已存在用户,用<code>,</code>分隔)</td>
+            <td>操作</td>
+        </tr>
+{{range $key,$value := .Group}}
+        <tr>
+            <td id="gname_{{$key}}">{{$key}}</td>
+            <td id="gmember_{{$key}}">{{$value}}</td>
+            <td id="group_op_{{$key}}">
+              <button id="group_edit_{{$key}}" type="button" class="btn btn-default " style="display:inline"><span class="glyphicon glyphicon-pencil"></span></button>
+              <button type="button" id="group_ok_{{$key}}" class="btn btn-success " style="display:none"><span class="glyphicon glyphicon-ok"></span></button>
+              &nbsp;&nbsp;&nbsp;
+              <button  id="group_del_{{$key}}"  type="button" class="btn btn-danger "><span class="glyphicon glyphicon-trash"></span></button>
+            </td>
+        </tr>
+{{end}}
+    <tr id="new_group">
+        <td><button class="btn btn-default" id="new_group_btn"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;添加一条用户组信息</button></td>
+    </tr>
+      </table>
+
+    </li>
+    <li class="list-group-item">
+      <div>
+          <table class="table">
+              <tr>
+                  <td>项目路径</td>
+                  <td>用户/用户组</td>
+                  <td>权限</td>
+                  <td>操作</td>
+              </tr>
+      {{range $index,$userrow := .Directories}}
+          <tr>
+              <td id="cpath_{{$index}}">{{index $userrow "path"}}</td>
+              <td id="cuser_{{$index}}">{{index $userrow "user"}}</td>
+              <td id="cauth_{{$index}}">{{index $userrow "auth"}}</td>
+              <td id="config_op_{{$index}}">
+                <button id="config_edit_{{$index}}" type="button" class="btn btn-default " style="display:inline"><span class="glyphicon glyphicon-pencil"></span></button>
+                <button type="button" id="config_ok_{{$index}}" class="btn btn-success " style="display:none"><span class="glyphicon glyphicon-ok"></span></button>
+                <button  id="config_del_{{$index}}"  type="button" class="btn btn-danger "><span class="glyphicon glyphicon-trash"></span></button>
+              </td>
+          </tr>
+      {{end}}
+      <tr id="new_auth">
+          <td><button class="btn btn-default" id="new_auth_btn"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;添加一条权限信息</button></td>
+      </tr>
+          </table>
+      </div>
+    </li>
+  </div>
+        {{else}}
+    <li class="list-group-item" style="height:54px;">开启权限设置: &nbsp;&nbsp;&nbsp;: &nbsp;&nbsp;&nbsp;<span class="switch switch-small" id="authzbox"><input  name="authzcheckbox" type="checkbox" ></span>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span class="authz-name" style="display:none">权限配置文件名:<span class="adb">{{.Adb}}</span></span>
+    </li>
+    <div class="authz" style="display:none">
+    <li class="list-group-item">
+      <table class="table">
+        <tr>
+            <td>用户组名</td>
+            <td>用户(填写已存在用户,用<code>,</code>分隔)</td>
+            <td>操作</td>
+        </tr>
+{{range $key,$value := .Group}}
+        <tr>
+            <td id="gname_{{$key}}">{{$key}}</td>
+            <td id="gmember_{{$key}}">{{$value}}</td>
+            <td id="group_op_{{$key}}">
+              <button id="group_edit_{{$key}}" type="button" class="btn btn-default " style="display:inline"><span class="glyphicon glyphicon-pencil"></span></button>
+              <button type="button" id="group_ok_{{$key}}" class="btn btn-success " style="display:none"><span class="glyphicon glyphicon-ok"></span></button>
+              &nbsp;&nbsp;&nbsp;
+              <button  id="group_del_{{$key}}"  type="button" class="btn btn-danger "><span class="glyphicon glyphicon-trash"></span></button>
+            </td>
+        </tr>
+{{end}}
+      <tr id="new_group">
+          <td><button class="btn btn-default" id="new_group_btn"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;添加一条用户组信息</button></td>
+      </tr>
+      </table>
+
+    </li>
+    <li class="list-group-item">
+      <div>
+          <table class="table">
+              <tr>
+                  <td>项目路径</td>
+                  <td>用户/用户组</td>
+                  <td>权限</td>
+                  <td>操作</td>
+              </tr>
+              {{range $index,$userrow := .Directories}}
+                  <tr>
+                      <td id="cpath_{{$index}}">{{index $userrow "path"}}</td>
+                      <td id="cuser_{{$index}}">{{index $userrow "user"}}</td>
+                      <td id="cauth_{{$index}}">{{index $userrow "auth"}}</td>
+                      <td id="config_op_{{$index}}">
+                        <button id="config_edit_{{$index}}" type="button" class="btn btn-default " style="display:inline"><span class="glyphicon glyphicon-pencil"></span></button>
+                        <button type="button" id="config_ok_{{$index}}" class="btn btn-success " style="display:none"><span class="glyphicon glyphicon-ok"></span></button>
+                        &nbsp;
+                        <button  id="config_del_{{$index}}"  type="button" class="btn btn-danger "><span class="glyphicon glyphicon-trash"></span></button>
+                      </td>
+                  </tr>
+              {{end}}
+              <tr id="new_auth">
+                  <td><button class="btn btn-default" id="new_auth_btn"><span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;添加一条权限信息</button></td>
+              </tr>
+          </table>
+      </div>
+    </li>
+  </div>
+        {{end}}
+  </ul>
+</div>
+<div id="addindex"></div>
+</body>
+<script src="../js/jquery.min.js"></script>
+<script>
+{{range $k,$v := $.Users}}
+    $('#edit_{{$k}}').on('click',function(e){
+      var username = $('#username_{{$k}}').text()
+      var password = $('#password_{{$k}}').text()
+      //remove td
+        $('#username_{{$k}}').remove();
+        $('#password_{{$k}}').remove();
+      //add new td
+        $('#op_{{$k}}').before("<td id='username_{{$k}}'><input type='text' class='form-control' id= 'edited_username_{{$k}}' value="+username+" ></td>")
+        $('#op_{{$k}}').before("<td id='password_{{$k}}'><input type='text' class='form-control' id='edited_password_{{$k}}' value="+password+" ></td>")
+        //change button
+        $('#edit_{{$k}}').css("display","none");
+        $('#ok_{{$k}}').css("display","inline");
+    });
+    // confirm edit ..
+    $('#ok_{{$k}}').on('click',function(e){
+      //handle ajax  edit post
+      var o_username= $('#edited_username_{{$k}}').attr('value')
+      var o_pwd=$('#edited_password_{{$k}}').attr('value')
+      var username = $('#edited_username_{{$k}}').val()
+      var password = $('#edited_password_{{$k}}').val()
+      var repo = $('#reponame').text();
+      $.ajax({
+        url:"/passwd" ,
+        data:{reponame:repo,old_username:o_username,old_pwd:o_pwd,new_username:username,new_pwd:password},
+        dataType:"json",
+        type:"POST",
+      }).done(function(data,statusText,jqXHR){
+
+        if (jqXHR.status===200){
+
+          $("#username_{{$k}}").remove();
+          $("#password_{{$k}}").remove();
+          $("#op_{{$k}}").before("<td id='username_{{$k}}'>"+username+"</td>");
+          $("#op_{{$k}}").before("<td id='password_{{$k}}'>"+password+"</td>");
+          $('#edit_{{$k}}').css("display","inline");
+          $('#ok_{{$k}}').css("display","none");
+        }
+      });
+      console.log(username)
+      console.log(password)
+    });
+
+    $('#del_{{$k}}').on('click',function(e){
+      //handle ajax delete
+      var repo = $('#reponame').text();
+      $.ajax({
+        url:"/delpasswd",
+        data:{reponame:repo,old_username:{{$k}},old_pwd:{{$v}}},
+        type:"POST",
+        dataType:"json",
+      }).done(function(data,statusText,jqXHR){
+         if (jqXHR.status ===200){
+           console.log("delete a passwd key-pair..")
+           $("#username_{{$k}}").remove();
+           $("#password_{{$k}}").remove();
+           $("#op_{{$k}}").remove();
+         }
+      });
+    });
+{{end}}
+
+{{range $key,$value := .Group}}
+
+
+    $('#group_edit_{{$key}}').on('click',function(e){
+      var groupname = $('#gname_{{$key}}').text()
+      var  users= $('#gmember_{{$key}}').text()
+       //remove td
+        $('#gname_{{$key}}').remove();
+        $('#gmember_{{$key}}').remove();
+        //add new td
+          $('#group_op_{{$key}}').before("<td id='gname_{{$key}}'><input type='text' class='form-control' id= 'edited_gname_{{$key}}' value="+groupname+" ></td>")
+          $('#group_op_{{$key}}').before("<td id='gmember_{{$key}}'><input type='text' class='form-control' id='edited_gmember_{{$key}}' value="+users+" ></td>")
+          //change button
+          $('#group_edit_{{$key}}').css("display","none");
+          $('#group_ok_{{$key}}').css("display","inline");
+    });
+
+    $("#group_ok_{{$key}}").on('click',function(e){
+    var repo = $('#reponame').text();
+    var o_groupname= $("#edited_gname_{{$key}}").attr('value')
+    var o_users=$("#edited_gmember_{{$key}}").attr('value')
+    var groupname = $('#edited_gname_{{$key}}').val()
+    var users = $('#edited_gmember_{{$key}}').val()
+      //handle ajax edit
+        $.ajax({
+          url:"/groups",
+          data:{reponame:repo,old_groupname:o_groupname,old_users:o_users,new_groupname:groupname,new_users:users},
+          dataType:"json",
+          type:"POST",
+        }).done(function(data,statusText,jqXHR){
+           if(jqXHR.status===200){
+             $("#gname_{{$key}}").remove();
+             $("#gmember_{{$key}}").remove();
+             $("#group_op_{{$key}}").before("<td id='gname_{{$key}}'>"+groupname+"</td>");
+             $("#group_op_{{$key}}").before("<td id='gmember_{{$key}}'>"+users+"</td>");
+             $('#group_edit_{{$key}}').css("display","inline");
+             $('#group_ok_{{$key}}').css("display","none");
+           }
+        });
+    });
+
+    $("#group_del_{{$key}}").on('click',function(e){
+          var repo = $('#reponame').text();
+      //handle ajax delete
+      $.ajax({
+        url:"/delgroup",
+        data:{reponame:repo,old_groupname:{{$key}},old_users:{{$value}}},
+        dataType:"json",
+        type:"POST",
+      }).done(function(data,statusText,jqXHR){
+         if (jqXHR.status===200){
+           console.log("delete a group key-pair..")
+           $("#gname_{{$key}}").remove();
+           $("#gmember_{{$key}}").remove();
+           $("#group_op_{{$key}}").remove();
+         }
+      });
+    });
+{{end}}
+
+
+{{range $index,$userrow := .Directories}}
+    $("#addindex").attr("index",{{$index}})
+
+    $('#config_edit_{{$index}}').on('click',function(e){
+       var origin_cuser=$("#cuser_{{$index}}").text()
+        //remove td
+      $('#cuser_{{$index}}').remove();
+      $('#cauth_{{$index}}').remove();
+      //add new td
+      $('#config_op_{{$index}}').before(`<td id='cuser_{{$index}}'><select multiple="multiple" size="2" class="form-control" id="edited_cuser_{{$index}}" for="`+origin_cuser+`">
+      </select></td>`);
+      //<option value={{index $userrow "user"}}>{{index $userrow "user"}}</option>
+      $('#config_op_{{$index}}').before(`<td id='cauth_{{$index}}'><input type='text' class='form-control' id='edited_cauth_{{$index}}' value='{{index $userrow "auth"}}'></td>`);
+      //change button
+      $('#config_edit_{{$index}}').css("display","none");
+      $('#config_ok_{{$index}}').css("display","inline");
+      {{range $u,$p :=$.Users}}
+        $('#edited_cuser_{{$index}}').append("<option value='{{$u}}'>{{$u}}</option>")
+      {{end}}
+      {{range $group,$users :=$.Group}}
+        $('#edited_cuser_{{$index}}').append("<option value='@{{$group}}'>@{{$group}}</option>")
+      {{end}}
+      $('#edited_cuser_{{$index}}').append("<option value='*'>*</option>")
+    });
+
+    $("#config_ok_{{$index}}").on('click',function(e){
+          var repo = $('#reponame').text();
+      var tag = $('#cpath_{{$index}}').text();
+      //user is an array
+      var userarray=$("#edited_cuser_{{$index}}").val()
+      var userstring =""
+      userarray.forEach(function(user,index){
+        if(index == userarray.length-1){
+          userstring+=user
+        }else{
+          userstring+=user+","
+        }
+      });
+      var auth = $("#edited_cauth_{{$index}}").val()
+      var o_users = $("#edited_cuser_{{$index}}").attr('for')
+      var o_auth = $("#edited_cauth_{{$index}}").attr('value')
+      console.log(o_users,o_auth)
+      $.ajax({
+        url:"/editauth",
+        data:{reponame:repo,old_users:o_users,old_auth:o_auth,new_users:userstring,new_auth:auth,tag:tag},
+        dataType:"json",
+        type:"POST",
+      }).done(function(data,statusText,jqXHR){
+          if (jqXHR.status===200){
+            $("#cuser_{{$index}}").remove();
+            $("#cauth_{{$index}}").remove();
+            $("#config_op_{{$index}}").before(`<td id="cuser_{{$index}}">`+userstring+`</td>`);
+            $("#config_op_{{$index}}").before(`<td id="cauth_{{$index}}">`+auth+`</td>`)
+            $("#config_ok_{{$index}}").css("display","none")
+            $("#config_edit_{{$index}}").css("display","inline")
+          }
+      });
+    });
+
+$("#config_del_{{$index}}").on('click',function(){
+      var repo = $('#reponame').text();
+      var tag = $('#cpath_{{$index}}').text();
+  //handle ajax delete
+  $.ajax({
+    url:"/delauth",
+    data:{reponame:repo,tag:tag,old_users:{{index $userrow "user"}},old_auth:{{index $userrow "auth"}}},
+    dataType:"json",
+    type:"POST",
+  }).done(function(data,statusText,jqXHR){
+     if (jqXHR.status===200){
+       $("#cpath_{{$index}}").remove();
+       $("#cuser_{{$index}}").remove();
+       $("#cauth_{{$index}}").remove();
+       $("#config_op_{{$index}}").remove();
+     }
+  });
+});
+{{end}}
+
+</script>
+
+<script src="../js/bootstrap.min.js"></script>
+<script src="../js/bootstrap-switch.js"></script>
+<script src="../js/switchevent.js"></script>
+<script src="../js/newpasswd.js"></script>
+<script src="../js/newgroup.js"></script>
+<script src="../js/newauth.js"></script>
+</html>
+{{end}}

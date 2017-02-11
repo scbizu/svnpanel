@@ -1,0 +1,48 @@
+<html>
+<head>
+<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
+<script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+<script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+<title>SVN admin</title>
+</head>
+<body>
+  <div>
+      <ol class="breadcrumb">
+          <li><a href="#">SVN</a></li>
+          <li class="active">Repos</li>
+      </ol>
+ </div>
+ <div class="repos">
+</div>
+</body>
+<script>
+// $(document).ready(function(){
+//   $("button").on('click', function() {
+//     alert("1")
+//   });
+// });
+
+
+    $.ajax({
+      url:"/repos" ,
+      dataType:"json" ,
+    }).done(function(data){
+
+          var Obj=jQuery.parseJSON(data)
+          Obj.forEach(function(repo){
+            console.log(repo)
+            var name= repo.reponame
+            var author=repo.author
+            var log= repo.log
+            var logsize = repo.logsize
+            var timestamp=repo.timestamp
+            var owner=repo.owner
+            $(".repos").append(` <div class="panel panel-default">
+                <div class="panel-body"><div>`+"仓库名称："+name+"</div>"+`<div style="margin-left:40%;margin-top:-20px">仓库创建者:`+owner+`</div>
+                  <div style="margin-left:80%;margin-top:-20px"><button onclick="window.location.href='/config/`+name+`';" type="button" class="btn btn-default config" id="`+name+`"><span class="glyphicon glyphicon-wrench"></span></button></div></div>
+                  <div class="panel-footer">`+"提交者:"+author+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ;提交信息:"+log+";"+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;更新时间:"+timestamp+`</div>
+             </div>`)
+          });
+      });
+</script>
+</html>
